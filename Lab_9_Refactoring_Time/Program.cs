@@ -10,8 +10,6 @@ namespace Lab_8_Get_To_Know_Your_Classmates
 {
     class Program
     {
-
-        // I am sorry for the length of this program
         static void Main(string[] args)
         {
             // Call the Classmate info Method
@@ -89,35 +87,15 @@ namespace Lab_8_Get_To_Know_Your_Classmates
                 Console.WriteLine($"{i+1}: {classmates[i][0]}");
             }
 
-            // This try catch makes sure everything is in range of the given numbers
             int currentStudent = -1;
 
             string check = ParseLife("Would you rather use a students \"number\" or \"name\"");
 
-
             currentStudent = ParseStudent(check, classmates.Count);
 
-            string favorites = ValidateInput();
-
-            // This prints out the respective students favorite
-            switch (favorites)
-            {
-                case "food":
-                    Console.WriteLine($"{classmates[currentStudent][0]}'s favorite food is " + classmates[currentStudent][1]);
-                    break;
-                case "subject":
-                    Console.WriteLine($"{classmates[currentStudent][0]}'s favorite subject is " + classmates[currentStudent][2]);
-                    break;
-                case "hobby":
-                    Console.WriteLine($"{classmates[currentStudent][0]}'s favorite hobby is " + classmates[currentStudent][3]);
-                    break;
-                case "color":
-                    Console.WriteLine($"{classmates[currentStudent][0]}'s favorite hobby is " + classmates[currentStudent][4]);
-                    break;
-            }
+            ValidateInput(classmates[currentStudent]);
 
             Console.WriteLine();
-            GetContinueStudent();
             GetContinue();
         }
 
@@ -150,6 +128,11 @@ namespace Lab_8_Get_To_Know_Your_Classmates
             Console.Write(message + " ");
             string input = Console.ReadLine();
             Console.WriteLine();
+            if (input.Length == 0)
+            {
+                Console.WriteLine("Please input a valid string.");
+                return GetUserInput(message);
+            }
             return input;
         }
 
@@ -212,36 +195,52 @@ namespace Lab_8_Get_To_Know_Your_Classmates
         }
 
         // This method makes sure the answer to the favorites question is valid
-        public static string ValidateInput()
+        public static void ValidateInput(List<string> student)
         {
             // Prompts the user to pick a topic they want to know about a classmate
             string favorites = GetUserInput($"What would you like to know about them? " +
                                             $"(Enter \"food\", \"subject\", \"hobby\", or \"color\")");
+
             switch (favorites)
             {
                 case "food":
-                    return "food";
+                    Console.WriteLine($"{student[0]}'s favorite food is " + student[1]);
+                    break;
                 case "subject":
-                    return "subject";
+                    Console.WriteLine($"{student[0]}'s favorite subject is " + student[2]);
+                    break;
                 case "hobby":
-                    return "hobby";
+                    Console.WriteLine($"{student[0]}'s favorite hobby is " + student[3]);
+                    break;
                 case "color":
-                    return "color";
-                default:
-                    Console.WriteLine("Not a valid option.\n");
-                    return ValidateInput();
+                    Console.WriteLine($"{student[0]}'s favorite hobby is " + student[4]);
+                    break;
             }
+
+            GetContinueStudent(student);
         }
 
-        public static void GetContinueStudent()
+        public static void GetContinueStudent(List<string> student)
         {
-            // TODO: Make a method to continue with current student
+            string input = GetUserInput("Do you want to continue with the current student? (y/n)");
+            if (input == "y")
+            {
+                ValidateInput(student);
+            }
+            else if (input == "n")
+            {
+                Console.WriteLine("Thank you!");
+            }
+            else
+            {
+                GetContinue();
+            }
         }
 
         // This method checks to see if the user wants to run through the program again
         public static void GetContinue()
         {
-            string input = GetUserInput("Do you want to continue? (y/n)");
+            string input = GetUserInput("Do you want to look at or add another classmate? (y/n)");
             if (input == "y")
             {
                 GetClassMateInfo();
@@ -271,6 +270,17 @@ namespace Lab_8_Get_To_Know_Your_Classmates
                     Console.WriteLine("Please return \"name\" or \"number\".\n");
                     return ParseLife(message);
             }
+        }
+
+        public static List<string> AddNewStudent()
+        {
+            List<string> student = new List<string>();
+            student.Add(GetUserInput("What is the student's favorite food?"));
+            student.Add(GetUserInput("What is the student's favorite color?"));
+            student.Add(GetUserInput("What is the student's name?"));
+            student.Add(GetUserInput("What is the student's favorite subject?"));
+            student.Add(GetUserInput("What is the student's favorite hobby?"));
+            return student;
         }
     }
 }
