@@ -4,6 +4,7 @@
 // PURPOSE    : Improve your student information system from the previous lab by using a collection.
 // ===============================
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Lab_8_Get_To_Know_Your_Classmates
@@ -12,66 +13,53 @@ namespace Lab_8_Get_To_Know_Your_Classmates
     {
         static void Main(string[] args)
         {
-            // Call the Classmate info Method
-            GetClassMateInfo();
-        }
+            // Sets up the StudentInfo classes with info also I apologize if this is not correct I have not done classes in a while
 
-        // This method defines and sets up a class with info about them
-        public static void GetClassMateInfo()
-        {
+            StudentInfo vince = new StudentInfo();
+            vince.StudentName = "Vince";
+            vince.FavoriteFood = "Fajitas";
+            vince.FavoriteSubject = "Physical Education";
+            vince.FavoriteHobby = "Basketball";
+            vince.FavoriteColor = "Blue";
 
-            // Sets up a two-dimensional list that represents the class and their interests
+            StudentInfo spinelli = new StudentInfo();
+            spinelli.StudentName = "Spinelli";
+            spinelli.FavoriteFood = "Fries";
+            spinelli.FavoriteSubject = "Band";
+            spinelli.FavoriteHobby = "Playing Guitar";
+            spinelli.FavoriteColor = "Red";
 
-            List<string> vince = new List<string>
-            {
-                "Vince",
-                "Fajitas",
-                "Physical Education",
-                "Basketball",
-                "Blue"
-            };
-            List<string> spinelli = new List<string>
-            {
-                "Spinelli",
-                "Fries",
-                "Band",
-                "Playing Guitar",
-                "Red"
-            };
-            List<string> mikey = new List<string>
-            {
-                "Mikey",
-                "Spaghetti",
-                "History",
-                "Reading",
-                "Green"
-            };
-            List<string> tj = new List<string>
-            {
-                "T.J.",
-                "Burgers",
-                "Math",
-                "Hanging with friends",
-                "Yellow"
-            };
-            List<string> gretchen = new List<string>
-            {
-                "Gretchen",
-                "Sandwiches",
-                "Science",
-                "Chemistry",
-                "Purple"
-            };
-            List<string> gus = new List<string>
-            {
-                "Gus",
-                "Roast Lamb",
-                "Art",
-                "Drawing",
-                "Orange"
-            };
+            StudentInfo mikey = new StudentInfo();
+            mikey.StudentName = "Mikey";
+            mikey.FavoriteFood = "Spaghetti";
+            mikey.FavoriteSubject = "History";
+            mikey.FavoriteHobby = "Reading";
+            mikey.FavoriteColor = "Green";
 
-            List<List<string>> classmates = new List<List<string>>
+            StudentInfo tj = new StudentInfo();
+            tj.StudentName = "T.J.";
+            tj.FavoriteFood = "Burgers";
+            tj.FavoriteSubject = "Math";
+            tj.FavoriteHobby = "Hanging with friends";
+            tj.FavoriteColor = "Yellow";
+
+            StudentInfo gretchen = new StudentInfo();
+            gretchen.StudentName = "Gretchen";
+            gretchen.FavoriteFood = "Sandwiches";
+            gretchen.FavoriteSubject = "Science";
+            gretchen.FavoriteHobby = "Chemistry";
+            gretchen.FavoriteColor = "Purple";
+
+            StudentInfo gus = new StudentInfo();
+            gus.StudentName = "Gus";
+            gus.FavoriteFood = "Roast Lamb";
+            gus.FavoriteSubject = "Art";
+            gus.FavoriteHobby = "Drawing";
+            gus.FavoriteColor = "Orange";
+
+
+            // A list with the student info classes
+            List<StudentInfo> classmates = new List<StudentInfo>
             {
                 vince,
                 spinelli,
@@ -81,26 +69,53 @@ namespace Lab_8_Get_To_Know_Your_Classmates
                 gus
             };
 
+            // Call the Classmate info method
+            GetClassmateInfo(classmates);
+        }
+
+        // This method defines and sets up a class with info about them
+        public static void GetClassmateInfo(List<StudentInfo> classmates)
+        {
+            classmates.Sort(SortClass);
+
+            // Prints the current students to the console
             Console.WriteLine("Welcome to our class. Our students are: ");
             for (int i = 0; i < classmates.Count; i++)
             {
-                Console.WriteLine($"{i+1}: {classmates[i][0]}");
+                Console.WriteLine($"{i+1}: {classmates[i].StudentName}");
             }
 
-            int currentStudent = -1;
+            bool addLook = AddOrKnow();
 
-            string check = ParseLife("Would you rather use a students \"number\" or \"name\"");
+            if (!addLook)
+            {
+                int currentStudent = -1;
 
-            currentStudent = ParseStudent(check, classmates.Count);
+                string check = ParseLife("Would you rather use a students \"number\" or \"name\"");
 
-            ValidateInput(classmates[currentStudent]);
+                currentStudent = ParseStudent(check, classmates.Count, classmates);
 
+                ValidateInput(classmates[currentStudent]);
+            } else
+            {
+                classmates.Add(AddNewStudent());
+            }
             Console.WriteLine();
-            GetContinue();
+            GetContinue(classmates);
+        }
+
+        public static bool AddOrKnow()
+        {
+            string check = GetUserInput("Do you want to add a student or know more about one? (\"add\" or \"know\")");
+            if (check == "add")
+            {
+                return true;
+            }
+            return false;
         }
 
         // This determines whether someone wants to look up a student by name or number
-        public static int ParseStudent(string check, int max)
+        public static int ParseStudent(string check, int max, List<StudentInfo> classmates)
         {
             int currentStudent = 0;
 
@@ -108,12 +123,12 @@ namespace Lab_8_Get_To_Know_Your_Classmates
                 {
                     case "number":
                         currentStudent = ParseRange(1, max, "Which student would you like to know more about? " +
-                          $"(Enter a number from 1-6)") - 1;
+                          $"(Enter a number from 1-{max})") - 1;
 
                         break;
                     case "name":
                         currentStudent = ParseName("Which student would you like to know more about? " +
-                             "(Enter a name)");
+                             "(Enter a name)", classmates);
                         break;
                     default:
                         break;
@@ -163,39 +178,25 @@ namespace Lab_8_Get_To_Know_Your_Classmates
         }
 
         // This method makes sure the user calls the correct name
-        public static int ParseName(string message)
+        public static int ParseName(string message, List<StudentInfo> classmates)
         {
             string name = GetUserInput(message);
-            int student = -1;
-            switch (name)
+
+            for (int i = 0; i < classmates.Count; i++)
             {
-                case "Vince":
-                    student = 0;
-                    break;
-                case "Spinelli":
-                    student = 1;
-                    break;
-                case "Mikey":
-                    student = 2;
-                    break;
-                case "T.J.":
-                    student = 3;
-                    break;
-                case "Gretchen":
-                    student = 4;
-                    break;
-                case "Gus":
-                    student = 5;
-                    break;
-                default:
-                    Console.WriteLine("Please enter a valid name.\n");
-                    return ParseName(message);
+                if (classmates[i].StudentName.ToLower() == name.ToLower())
+                {
+                    return i;
+                }
             }
-            return student;
+
+            Console.WriteLine("Please enter a valid name.");
+
+            return ParseName(message, classmates);
         }
 
         // This method makes sure the answer to the favorites question is valid
-        public static void ValidateInput(List<string> student)
+        public static void ValidateInput(StudentInfo student)
         {
             // Prompts the user to pick a topic they want to know about a classmate
             string favorites = GetUserInput($"What would you like to know about them? " +
@@ -204,23 +205,24 @@ namespace Lab_8_Get_To_Know_Your_Classmates
             switch (favorites)
             {
                 case "food":
-                    Console.WriteLine($"{student[0]}'s favorite food is " + student[1]);
+                    Console.WriteLine($"{student.StudentName}'s favorite food is " + student.FavoriteFood);
                     break;
                 case "subject":
-                    Console.WriteLine($"{student[0]}'s favorite subject is " + student[2]);
+                    Console.WriteLine($"{student.StudentName}'s favorite subject is " + student.FavoriteSubject);
                     break;
                 case "hobby":
-                    Console.WriteLine($"{student[0]}'s favorite hobby is " + student[3]);
+                    Console.WriteLine($"{student.StudentName}'s favorite hobby is " + student.FavoriteHobby);
                     break;
                 case "color":
-                    Console.WriteLine($"{student[0]}'s favorite hobby is " + student[4]);
+                    Console.WriteLine($"{student.StudentName}'s favorite color is " + student.FavoriteColor);
                     break;
             }
 
             GetContinueStudent(student);
         }
 
-        public static void GetContinueStudent(List<string> student)
+        // This method sees if a user wants to continue with the current student
+        public static void GetContinueStudent(StudentInfo student)
         {
             string input = GetUserInput("Do you want to continue with the current student? (y/n)");
             if (input == "y")
@@ -233,25 +235,25 @@ namespace Lab_8_Get_To_Know_Your_Classmates
             }
             else
             {
-                GetContinue();
+                GetContinueStudent(student);
             }
         }
 
         // This method checks to see if the user wants to run through the program again
-        public static void GetContinue()
+        public static void GetContinue(List<StudentInfo> classmates)
         {
             string input = GetUserInput("Do you want to look at or add another classmate? (y/n)");
             if (input == "y")
             {
-                GetClassMateInfo();
+                GetClassmateInfo(classmates);
             }
             else if (input == "n")
             {
-                Console.WriteLine("Thank you!");
+                Console.WriteLine("Have a good day!");
             }
             else
             {
-                GetContinue();
+                GetContinue(classmates);
             }
 
         }
@@ -272,15 +274,60 @@ namespace Lab_8_Get_To_Know_Your_Classmates
             }
         }
 
-        public static List<string> AddNewStudent()
+        // This method adds a new student to the school class
+        public static StudentInfo AddNewStudent()
         {
-            List<string> student = new List<string>();
-            student.Add(GetUserInput("What is the student's favorite food?"));
-            student.Add(GetUserInput("What is the student's favorite color?"));
-            student.Add(GetUserInput("What is the student's name?"));
-            student.Add(GetUserInput("What is the student's favorite subject?"));
-            student.Add(GetUserInput("What is the student's favorite hobby?"));
+            StudentInfo student = new StudentInfo();
+            student.StudentName = GetUserInput("What is the student's name?");
+            student.FavoriteFood = GetUserInput("What is the student's favorite food?");
+            student.FavoriteSubject = GetUserInput("What is the student's favorite subject?");
+            student.FavoriteHobby = GetUserInput("What is the student's favorite hobby?");
+            student.FavoriteColor = GetUserInput("What is the student's favorite color?");
             return student;
+        }
+
+        // This method sorts the school class
+        public static int SortClass(StudentInfo student1, StudentInfo student2)
+        {
+            return String.Compare(student1.StudentName, student2.StudentName);
+        }
+
+        // This class is a student confusing right?
+        public class StudentInfo
+        {
+            // Variables needed for the class
+            private string _studentName;
+            private string _favoriteFood;
+            private string _favoriteSubject;
+            private string _favoriteHobby;
+            private string _favoriteColor;
+
+            // Getters and Setters for each variable
+            public string StudentName
+            {
+                get { return _studentName; }
+                set { _studentName = value; }
+            }
+            public string FavoriteFood
+            {
+                get { return _favoriteFood; }
+                set { _favoriteFood = value; }
+            }
+            public string FavoriteSubject
+            {
+                get { return _favoriteSubject; }
+                set { _favoriteSubject = value; }
+            }
+            public string FavoriteHobby
+            {
+                get { return _favoriteHobby; }
+                set { _favoriteHobby = value; }
+            }
+            public string FavoriteColor
+            {
+                get { return _favoriteColor; }
+                set { _favoriteColor = value; }
+            }
         }
     }
 }
